@@ -1,135 +1,62 @@
 import json, jwt
 from flask import Blueprint, request, jsonify, current_app, Response
-from flask_restful import Api, Resource # used for REST API building
+from flask_restful import Api, Resource
 from datetime import datetime
 from auth_middleware import token_required
 
-from model.users import User
+from model.tasks import Task
 
-user_api = Blueprint('user_api', __name__,
-                   url_prefix='/api/users')
+tasks_api = Blueprint('tasks_api', __name__,
+                   url_prefix='/api/tasks')
 
-# API docs https://flask-restful.readthedocs.io/en/latest/api.html
-api = Api(user_api)
+api = Api(tasks_api)
 
-class UserAPI:        
-    class _CRUD(Resource):  # User API operation for Create, Read.  THe Update, Delete methods need to be implemeented
-        def post(self): # Create method
-            ''' Read data for json body '''
+class TaskAPI:        
+    class _CRUD(Resource):  
+        @token_required
+        def post(self, current_user):  # Create method
             body = request.get_json()
             
-            ''' Avoid garbage in, error checking '''
-            # validate name
-            name = body.get('name')
-            if name is None or len(name) < 2:
-                return {'message': f'Name is missing, or is less than 2 characters'}, 400
-            # validate uid
-            uid = body.get('uid')
-            if uid is None or len(uid) < 2:
-                return {'message': f'User ID is missing, or is less than 2 characters'}, 400
-            # look for password and dob
-            password = body.get('password')
-            dob = body.get('dob')
+            # Error checking and validation of body goes here
 
-            ''' #1: Key code block, setup USER OBJECT '''
-            uo = User(name=name, 
-                      uid=uid)
+            # Instantiate a Task object
+            task = Task(
+                name=body.get('name'), 
+                priority=body.get('priority'),
+                user_id=current_user.id,  # Assuming each task is linked to a user
+                # Include other task fields here
+            )
             
-            ''' Additional garbage error checking '''
-            # set password if provided
-            if password is not None:
-                uo.set_password(password)
-            # convert to date type
-            if dob is not None:
-                try:
-                    uo.dob = datetime.strptime(dob, '%Y-%m-%d').date()
-                except:
-                    return {'message': f'Date of birth format error {dob}, must be mm-dd-yyyy'}, 400
-            
-            ''' #2: Key Code block to add user to database '''
-            # create user in database
-            user = uo.create()
-            # success returns json of user
-            if user:
-                return jsonify(user.read())
-            # failure returns error
-            return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
+            # Save task to database
+            saved_task = task.create()  # You need to implement this method in your Task model
 
-        @token_required()
-        def get(self, _): # Read Method, the _ indicates current_user is not used
-            users = User.query.all()    # read/extract all users from database
-            json_ready = [user.read() for user in users]  # prepare output in json
-            return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
-   
-        @token_required("Admin")
-        def delete(self, _): # Delete Method
-            body = request.get_json()
-            uid = body.get('uid')
-            user = User.query.filter_by(_uid=uid).first()
-            if user is None:
-                return {'message': f'User {uid} not found'}, 404
-            json = user.read()
-            user.delete() 
-            # 204 is the status code for delete with no json response
-            return f"Deleted user: {json}", 204 # use 200 to test with Postman
-         
-    class _Security(Resource):
-        def post(self):
-            try:
-                body = request.get_json()
-                if not body:
-                    return {
-                        "message": "Please provide user details",
-                        "data": None,
-                        "error": "Bad request"
-                    }, 400
-                ''' Get Data '''
-                uid = body.get('uid')
-                if uid is None:
-                    return {'message': f'User ID is missing'}, 401
-                password = body.get('password')
-                
-                ''' Find user '''
-                user = User.query.filter_by(_uid=uid).first()
-                if user is None or not user.is_password(password):
-                    return {'message': f"Invalid user id or password"}, 401
-                if user:
-                    try:
-                        token = jwt.encode(
-                            {"_uid": user._uid},
-                            current_app.config["SECRET_KEY"],
-                            algorithm="HS256"
-                        )
-                        resp = Response("Authentication for %s successful" % (user._uid))
-                        resp.set_cookie("jwt", token,
-                                max_age=3600,
-                                secure=True,
-                                httponly=True,
-                                path='/',
-                                samesite='None'  # This is the key part for cross-site requests
+            if saved_task:
+                return jsonify(saved_task.read()), 201  # read() should be a method that serializes the task data
+            return {'message': 'Failed to create task'}, 400
 
-                                # domain="frontend.com"
-                                )
-                        return resp
-                    except Exception as e:
-                        return {
-                            "error": "Something went wrong",
-                            "message": str(e)
-                        }, 500
-                return {
-                    "message": "Error fetching auth token!",
-                    "data": None,
-                    "error": "Unauthorized"
-                }, 404
-            except Exception as e:
-                return {
-                        "message": "Something went wrong!",
-                        "error": str(e),
-                        "data": None
-                }, 500
+        @token_required
+        def get(self, current_user):  # Read Method
+            # Assuming you want to retrieve tasks for the logged in user only
+            tasks = Task.query.filter_by(user_id=current_user.id).all()
+            json_ready = [task.read() for task in tasks]  
+            return jsonify(json_ready)
 
-            
-    # building RESTapi endpoint
+        @token_required
+        def delete(self, current_user):  # Delete Method
+            task_id = request.args.get('id')  # Assuming the task ID is sent as an argument
+
+            # Error checking for task_id goes here
+
+            task = Task.query.filter_by(id=task_id, user_id=current_user.id).first()
+            if task is None:
+                return {'message': 'Task not found'}, 404
+            task.delete()  # You need to implement this method in your Task model
+            return {'message': f'Deleted task {task_id}'}, 204
+
+    # Add other endpoints if necessary (e.g., for updating tasks)
+
+    # Register the resources with the API
     api.add_resource(_CRUD, '/')
-    api.add_resource(_Security, '/authenticate')
-    
+
+# Register the blueprint in your Flask app
+# app.register_blueprint(tasks_api)
