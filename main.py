@@ -1,57 +1,46 @@
 import threading
-
-# import "packages" from flask
-from flask import render_template,request  # import render_template from "public" flask libraries
+from flask import render_template, request
 from flask.cli import AppGroup
 
+from __init__ import app, db  # cors import removed if not used
 
-# import "packages" from "this" project
-from __init__ import app, db, cors  # Definitions initialization
+# Import API Blueprints
+from api.task import tasks_api
+from model.tasks import init_db
 
+# Setup app pages if you have any, otherwise, remove this
+from projects.projects import app_projects
 
-# setup APIs
-from api.user import user_api # Blueprint import api definition
-# database migrations
-from model.users import initUsers
-
-# setup App pages
-from projects.projects import app_projects # Blueprint directory import projects definition
-
-
-# Initialize the SQLAlchemy object to work with the Flask app instance
+# Initialize the SQLAlchemy object with the Flask app
 db.init_app(app)
 
-# register URIs
+# Register API routes
+app.register_blueprint(tasks_api)
 
+# Register app pages - only if you have this setup
+app.register_blueprint(app_projects)
 
-app.register_blueprint(user_api) # register api routes
-app.register_blueprint(app_projects) # register app pages
-
-@app.errorhandler(404)  # catch for URL not found
+@app.errorhandler(404)
 def page_not_found(e):
-    # note that we set the 404 status explicitly
     return render_template('404.html'), 404
 
-@app.route('/')  # connects default URL to index() function
+@app.route('/')
 def index():
     return render_template("index.html")
 
-@app.route('/table/')  # connects /stub/ URL to stub() function
+@app.route('/table/')
 def table():
     return render_template("table.html")
 
 # Create an AppGroup for custom commands
 custom_cli = AppGroup('custom', help='Custom commands')
 
-# Define a command to generate data
 @custom_cli.command('generate_data')
 def generate_data():
-    initUsers()
+    init_db()  # Assumes init_db will setup initial data for tasks and possibly users
 
-# Register the custom command group with the Flask application
+# Register the custom command group with the Flask app
 app.cli.add_command(custom_cli)
-        
-# this runs the application on the development server
+
 if __name__ == "__main__":
-    # change name for testing
     app.run(debug=True, host="0.0.0.0", port="8086")
