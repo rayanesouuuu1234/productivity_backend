@@ -1,50 +1,39 @@
-import json
+# api/task.py
 from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
-# from auth_middleware import token_required
-from model.tasks import Task
+# from auth_middleware import token_required  # Uncomment if you have an authentication middleware
+from model.tasks import Task  # Make sure this path is correct
+from __init__ import app, db
 
-task_api = Blueprint('task_api', __name__, url_prefix='/api/task')
-api = Api(task_api)
+# Create a Blueprint for the tasks API
+tasks_blueprint = Blueprint('tasks_api', __name__)
+api = Api(tasks_blueprint)
 
-class TaskAPI:
-    class _CRUD(Resource):
-        # @token_required
-        def post(self):
-            if request.is_json:
-                data = request.get_json()
-                task_title = data.get('title')
-                task_description = data.get('description')
-                task_priority = data.get('priority')
-                # Assuming 'user_id' is fetched from authenticated user's session or token
-                user_id = data.get('user_id')
+class TaskResource(Resource):
+    # @token_required  # Uncomment if you have an authentication middleware
+    def get(self):
+        tasks = Task.query.all()
+        return jsonify([task.read() for task in tasks])
 
-                task = Task(
-                    title=task_title,
-                    description=task_description,
-                    priority=task_priority,
-                    user_id=user_id
-                )
+    # @token_required  # Uncomment if you have an authentication middleware
+    def post(self):
+        data = request.get_json()
+        task = Task(
+            title=data['title'],
+            description=data.get('description', ''),
+            priority=data['priority'],
+            user_id=data['user_id']  # Ensure you pass the correct user_id
+        )
+        
+        try:
+            with app.app_context():
+                db.create_all()
+                task.create()
+            return jsonify(task.read()), 201
+        except Exception as e:
+            return {'error': str(e)}, 500
 
-                # Save the task to the database
-                saved_task = task.create()  # Assuming you have a create method in your Task model
-                
-                if saved_task:
-                    return jsonify(saved_task.read()), 201
-                return {'message': 'Failed to create task'}, 500
+# Register the TaskResource with the API
+api.add_resource(TaskResource, '/tasks')
 
-            else:
-                return {'message': 'Request body must be in JSON format'}, 400
-
-        # @token_required
-        def get(self):
-            # Retrieve all tasks from the database
-            tasks = Task.query.all()
-            # Convert tasks to JSON-ready format
-            json_ready = [task.read() for task in tasks]
-            # Return JSON response
-            return jsonify(json_ready)
-
-        # Implement other CRUD operations (PUT, DELETE) as needed
-
-    api.add_resource(_CRUD, '/')
+# Make sure the Task model has methods like create() and read() implemented correctly
