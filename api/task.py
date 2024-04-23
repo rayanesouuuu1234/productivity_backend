@@ -15,7 +15,6 @@ class TaskResource(Resource):
         tasks = Task.query.all()
         return jsonify([task.read() for task in tasks])
 
-    # @token_required  # Uncomment if you have an authentication middleware
     def post(self):
         data = request.get_json()
         task = Task(

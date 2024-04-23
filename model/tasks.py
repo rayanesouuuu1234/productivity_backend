@@ -107,21 +107,21 @@ def initTasks():
         t1 = Task(
             title = "e",
             description = "e",
-            priority = "e",
+            priority = "high",
             user_id = 1
         )
         
         t2 = Task(
             title = "f",
             description = "f",
-            priority = "f",
+            priority = "medium",
             user_id = 2
         )
 
         t3 = Task(
             title = "g",
             description = "g",
-            priority = "g",
+            priority = "low",
             user_id = 3
         )
 
