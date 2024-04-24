@@ -105,27 +105,46 @@ def initTasks():
         db.create_all()
 
         t1 = Task(
-            title = "e",
-            description = "e",
-            priority = "high",
-            user_id = 1
+            title="Dishes",
+            description="get the dishes done",
+            priority="high",
+            user_id=1
         )
         
         t2 = Task(
-            title = "f",
-            description = "f",
-            priority = "medium",
-            user_id = 2
+            title="HW",
+            description="finish HW",
+            priority="medium",
+            user_id=2
         )
 
         t3 = Task(
-            title = "g",
-            description = "g",
-            priority = "low",
-            user_id = 3
+            title="Soccer Practice",
+            description="practice",
+            priority="low",
+            user_id=3
         )
 
-        tasks = [t1, t2, t3]
+        t4 = Task(
+            title="Grocery Shopping",
+            description="buy groceries for the week",
+            priority="medium",
+            user_id=4
+        )
+
+        t5 = Task(
+            title="Call Mom",
+            description="catch up call with mom",
+            priority="low",
+            user_id=5
+        )
+
+        tasks = [t1, t2, t3, t4, t5]
+
+        # Add tasks to the session and commit them to the database
+        db.session.add_all(tasks)
+        db.session.commit()
+
         # print("-------------------------- USERS -----------------------------")
         # print(users)
         """Builds sample user/note(s) data"""
