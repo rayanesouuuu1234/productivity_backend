@@ -208,9 +208,9 @@ def initUsers():
             role="Admin"
         )
         u2 = User(
-            name="Aashray Reddy", 
-            uid="imreddy", 
-            email = "aashray@gmail.com",
+            name="Rayane Souissi", 
+            uid="rayane", 
+            email = "rsouissi2006@gmail.com",
             password="password",
             dob=date(1945, 8, 6)
         )

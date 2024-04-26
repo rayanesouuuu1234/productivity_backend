@@ -3,7 +3,9 @@ import threading
 from flask import render_template,request, send_from_directory
 from flask.cli import AppGroup
 from api.task import tasks_blueprint
+from api.user import user_api
 from model.tasks import initTasks
+from model.users import initUsers
 from projects.projects import app_projects
 
 # import init stuff
@@ -13,7 +15,8 @@ from __init__ import app, db, cors
 db.init_app(app)
 
 # Register API routes
-app.register_blueprint(tasks_blueprint, url_prefix='/api')  # Register the tasks blueprint
+app.register_blueprint(tasks_blueprint)  # Register the tasks blueprint
+app.register_blueprint(user_api)
 
 # Register app pages - only if you have this setup
 app.register_blueprint(app_projects)
@@ -46,6 +49,8 @@ custom_cli = AppGroup('custom', help='Custom commands')
 @custom_cli.command('generate_data')
 def generate_data():
     initTasks()
+    initUsers()
+
 
 # Register the custom command group with the Flask application
 app.cli.add_command(custom_cli)
@@ -53,4 +58,4 @@ app.cli.add_command(custom_cli)
 # this runs the application on the development server
 if __name__ == "__main__":
     # change name for testing
-    app.run(debug=True, host="0.0.0.0", port="8072")
+    app.run(debug=True, host="0.0.0.0", port="8086")

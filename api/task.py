@@ -4,9 +4,11 @@ from flask_restful import Api, Resource
 from auth_middleware import token_required  # Uncomment if you have an authentication middleware
 from model.tasks import Task  # Make sure this path is correct
 from __init__ import app, db
+from model.users import User 
+import jwt
 
 # Create a Blueprint for the tasks API
-tasks_blueprint = Blueprint('tasks_api', __name__)
+tasks_blueprint = Blueprint('tasks_api', __name__, url_prefix='/api/tasks')
 api = Api(tasks_blueprint)
 
 class TaskResource(Resource):
@@ -19,7 +21,6 @@ class TaskResource(Resource):
 
     def post(self):
         data = request.get_json()
-        
         try:
             task = Task(
                 title=data['title'],
@@ -32,10 +33,19 @@ class TaskResource(Resource):
                 task.create()
             a = task.read()
             print ("sds")
-            return jsonify(task.read()), 201
+            print(task.read())
+            return task.read(), 201
         except Exception as e:
-            a = {'error': str(e)}
-            return a, 500
+            print(e)
+        
+    # def put(self):
+    #     data = request.get_json()
+    #     try:
+    #         # Retrieve the task by ID
+    #         task = Task.query.get()
+    #         if not task:
+    #             # If no task is found, return an error message
+    #             return jsonify({'error': 'Task not found'}), 404
 
 # Register the TaskResource with the API
 api.add_resource(TaskResource, '/tasks')
