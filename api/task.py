@@ -37,16 +37,7 @@ class TaskResource(Resource):
             return task.read(), 201
         except Exception as e:
             print(e)
-        
-    # def put(self):
-    #     data = request.get_json()
-    #     try:
-    #         # Retrieve the task by ID
-    #         task = Task.query.get()
-    #         if not task:
-    #             # If no task is found, return an error message
-    #             return jsonify({'error': 'Task not found'}), 404
-
+    
 # Register the TaskResource with the API
 api.add_resource(TaskResource, '/tasks')
 
