@@ -36,8 +36,25 @@ class TaskResource(Resource):
             print(task.read())
             return task.read(), 201
         except Exception as e:
-            print(e)
+            print(e)       
     
+    def put(self, task_id):
+            data = request.get_json()
+            task = Task.query.get(task_id)  # Find the task by ID
+            if not task:
+                return {'error': 'Task not found'}, 404  # Task not found, return HTTP status code for not found
+        
+            try:
+                # Update task properties based on the provided data
+                task.title = data.get('title', task.title)
+                task.description = data.get('description', task.description)
+                task.priority = data.get('priority', task.priority)
+                with app.app_context():
+                    db.session.commit()  # Commit the changes to the database
+                return task.read(), 200  # Return the updated task details and HTTP status code for OK
+            except Exception as e:
+                return {'error': str(e)}, 400  # Return the error and HTTP status code for bad request 
+
 # Register the TaskResource with the API
 api.add_resource(TaskResource, '/tasks')
 

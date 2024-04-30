@@ -209,7 +209,7 @@ def initUsers():
         )
         u2 = User(
             name="Rayane Souissi", 
-            uid="rayane", 
+            uid="stevejobs", 
             email = "rsouissi2006@gmail.com",
             password="password",
             dob=date(2006, 5, 2)
