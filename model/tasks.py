@@ -53,32 +53,32 @@ class Task(db.Model):
     
     def create(self):
         try:
-            db.session.add(self)
-            db.session.commit()
-            return self
+            db.session.add(self)  # Attempt to add this Task instance to the session
+            db.session.commit()  # Commit the session to save changes to the database
+            return self  # Return the Task instance if commit was successful
         except IntegrityError:
-            db.session.rollback()
-            return None
+            db.session.rollback()  # Rollback the session to undo changes in case of an error
+            return None  # Return None to indicate the creation failed
 
     def __str__(self):
-        return json.dumps(self.read())
+        return json.dumps(self.read())  # Convert the output of read() method to JSON string for easy readability
 
     def create(self):
         try:
-            db.session.add(self)
-            db.session.commit()
-            return self
+            db.session.add(self)  # Attempt to add this Task instance to the session
+            db.session.commit()  # Commit the session to save changes to the database
+            return self  # Return the Task instance if commit was successful
         except IntegrityError:
-            db.session.remove()
-            return None
+            db.session.remove()  # Remove this session due to the integrity error to prevent any residual issues
+            return None  # Return None to indicate the creation failed
 
     def read(self):
         return {
-            "id": self.id,
-            "title": self.title,
-            "description": self.description,
-            "priority": self.priority,
-            "user_id": self.user_id
+            "id": self.id,  # Return the Task's id
+            "title": self.title,  # Return the Task's title
+            "description": self.description,  # Return the Task's description
+            "priority": self.priority,  # Return the Task's priority
+            "user_id": self.user_id  # Return the Task's associated user_id
         }
 
     # CRUD update: updates user name, password, phone
@@ -149,10 +149,11 @@ def initTasks():
         # print(users)
         """Builds sample user/note(s) data"""
         # i = 0
-        for task in tasks:
+        # Attempt to create each task, handling IntegrityError if encountered
+        
+        for task in tasks:  # Loop through each task in the tasks list
             try:
-                task.create()
-            except IntegrityError:
-                """fails with bad or duplicate data"""
-                db.session.remove()
-                print(f"Records exist, duplicate email, or error: {task.id}")
+                task.create()  # Try to create (add and commit) the task to the database
+            except IntegrityError:  # Catch any IntegrityError that occurs during task creation
+                db.session.remove()  # Remove the current session to clean up any residual state
+                print(f"Records exist, duplicate email, or error: {task.id}")  # Print an error message showing which task ID caused the error

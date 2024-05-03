@@ -192,60 +192,52 @@ class User(db.Model):
 
 """Database Creation and Testing """
 
-
-# Builds working data for testing
 def initUsers():
     with app.app_context():
         """Create database and tables"""
         db.create_all()
         """Tester data for table"""
-        u1 = User(
-            name="Advik Garg", 
-            uid="advikg", 
-            email="advik@gmail.com",
-            password="password",
-            dob=date(2001, 9, 12),
-            role="Admin"
-        )
-        u2 = User(
-            name="Rayane Souissi", 
-            uid="stevejobs", 
-            email = "rsouissi2006@gmail.com",
-            password="password",
-            dob=date(2006, 5, 2)
-        )
-        u3 = User(
-            name="Will Cheng",
-            uid="wcheng",
-            password='password',
-            email = "will@gmail.com",
-            dob=date(2020, 12, 25)
-        )
-        u4 = User(
-            name="Yeongsu Kim", 
-            uid="ykim", 
-            password="password",
-            email="ykim@gmail.com",
-            dob=date(1945, 8, 9),
-        )
-        u5 = User(
-            name="Aiden Kim",
-            uid="aiden",
-            password="123aiden",
-            email="aidenhw.kim@gmail.com",
-            dob=date(2007, 7, 27)
-        )
-        users = [u1, u2, u3, u4, u5]
-        # print("-------------------------- USERS -----------------------------")
-        # print(users)
-        """Builds sample user/note(s) data"""
-        # i = 0
-        for user in users:
+    u1 = User(
+           name="Justin Timberlake",
+           uid="jtimber",
+           email="jtimber@gmail.com",
+           password="password",
+           dob=date(1981, 1, 31),
+           role="Admin"
+       )
+    u2 = User(
+           name="Keanu Reeves",
+           uid="kreeves",
+           email = "kreeves@gmail.com",
+           password="password",
+           dob=date(1964, 9, 2)
+       )
+    u3 = User(
+           name="Lionel Messi",
+           uid="leom",
+           password='password',
+           email = "leomessi@gmail.com",
+           dob=date(1987, 6, 24)
+       )
+    u4 = User(
+           name="Lebron James",
+           uid="ykim",
+           password="password",
+           email="ykim@gmail.com",
+           dob=date(1984, 12, 30),
+       )
+    u5 = User(
+           name="Cristiano Ronaldo",
+           uid="cristiano",
+           password="password",
+           email="cristiano@gmail.com",
+           dob=date(1985, 2, 5)
+       )
+    users = [u1, u2, u3, u4, u5]
+
+    for user in users:
             try:
-                # print(i)
-                # print(user)
                 user.create()
             except IntegrityError:
-                """fails with bad or duplicate data"""
                 db.session.remove()
                 print(f"Records exist, duplicate email, or error: {user.uid}")
